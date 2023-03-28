@@ -1,2 +1,0 @@
-# Frontend
-# RMS Admin Dashboard
