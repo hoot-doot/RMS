@@ -6,10 +6,12 @@ import { mockPieData as data } from "../data/mockData";
 const PieChart = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const pieTheme = theme.palette.mode === "dark" ? "yellow_green_blue" : "purple_orange";
   return (
     <ResponsivePie
+      
       data={data}
-      colors={{ scheme: 'yellow_green_blue' }}
+      colors={{ scheme: pieTheme }}
       theme={{
         axis: {
           domain: {

@@ -43,7 +43,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
           },
         },
       }}
-      colors={isDashboard ? { datum: "color" } : { scheme: "yellow_green_blue" }} // added
+      colors={isDashboard ? { datum: "color" } : { scheme: theme.palette.mode === "dark" ? "yellow_green_blue" : "purple_orange" }} // added
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: "point" }}
       yScale={{

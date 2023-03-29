@@ -1,7 +1,7 @@
 import { Box,  Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import { useState } from "react";
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { mockTransactions } from "../../data/mockData";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -22,11 +22,8 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 
 const Dashboard = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const colors = tokens(theme.palette.mode);
-  const colorMode = useContext(ColorModeContext);
-  const [selected, setSelected] = useState("Dashboard");
-
-
   return (
     
     <Box m="20px">
@@ -185,6 +182,9 @@ const Dashboard = () => {
         </Box>
 
         <Box
+          onClick={() => {
+            navigate(`/menu`);
+          }}
           // gridColumn="span 6"
           // gridRow="span "
           // backgroundColor={colors.primary[400]}
@@ -233,6 +233,9 @@ const Dashboard = () => {
         </Box>
         
         <Box
+        onClick={() => {
+          navigate(`/calendar`);
+        }}
           // gridColumn="span 6"
           // gridRow="span "
           // backgroundColor={colors.primary[400]}
@@ -270,7 +273,7 @@ const Dashboard = () => {
                 mt="12px"
               >
                 <Typography variant="h1" color={"#F8F8F8"}>
-                  Calender
+                  Calendar
                 </Typography>
           </Box>
         </Box>

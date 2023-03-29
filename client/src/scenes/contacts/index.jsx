@@ -1,17 +1,34 @@
 import { Box } from "@mui/material";
+import { useEffect } from "react";
+import { useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
+import axios from "axios";
 
 const Contacts = () => {
+  const [contactsData, setContacts] = useState([]);
+
+  useEffect(() => {
+    const fetchAllContacts = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/contacts");
+        setContacts(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchAllContacts();
+  }, []);
+  console.log(contactsData);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
+  
   const columns = [
-    { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "registrarId", headerName: "Registrar ID" },
+    { field: "id", headerName: "ID", flex: 0.3 },
+    { field: "registrarID", headerName: "Registrar ID" },
     {
       field: "name",
       headerName: "Name",
@@ -19,11 +36,12 @@ const Contacts = () => {
       cellClassName: "name-column--cell",
     },
     {
-      field: "age",
-      headerName: "Age",
+      field: "desc",
+      headerName: "desc",
       type: "number",
       headerAlign: "left",
       align: "left",
+      flex: 1,
     },
     {
       field: "phone",
@@ -38,17 +56,17 @@ const Contacts = () => {
     {
       field: "address",
       headerName: "Address",
-      flex: 1,
+      flex: 1.4,
     },
     {
       field: "city",
       headerName: "City",
-      flex: 1,
+      flex: 0.5,
     },
     {
       field: "zipCode",
       headerName: "Zip Code",
-      flex: 1,
+      flex: 0.5,
     },
   ];
 
@@ -91,7 +109,7 @@ const Contacts = () => {
         }}
       >
         <DataGrid
-          rows={mockDataContacts}
+          rows={contactsData}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
         />

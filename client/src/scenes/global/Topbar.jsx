@@ -1,5 +1,6 @@
 import { Typography,MenuItem,Select,FormControl, Box, IconButton, useTheme } from "@mui/material";
 import { useContext } from "react";
+import profileImage from "../assets/profile.jpeg";
 import { ColorModeContext, tokens } from "../../theme";
 import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
@@ -15,41 +16,31 @@ const Topbar = () => {
   const colorMode = useContext(ColorModeContext);
 
   return (
-    <Box display="flex" justifyContent="space-between" m={3} >
-      {/* SEARCH BAR */}
-      <Box
-        display="flex"
-        backgroundColor={colors.primary[400]}
-        borderRadius="3px"
-      >
-        <InputBase sx={{ ml: 2, flex: 1 }} placeholder="Search" />
-        <IconButton type="button" sx={{ p: 1 }}>
-          <SearchIcon />
-        </IconButton>
-      </Box>
+    <Box display="flex" justifyContent="right" m={3} mb={0}>
+      
 
       {/* ICONS */}
-      <Box display="flex" >
+      <Box display="flex"  >
         <IconButton onClick={colorMode.toggleColorMode}>
           {theme.palette.mode === "dark" ? (
-            <DarkModeOutlinedIcon />
+            <DarkModeOutlinedIcon sx={{ fontSize: "25px" }}/>
           ) : (
-            <LightModeOutlinedIcon />
+            <LightModeOutlinedIcon sx={{ fontSize: "25px" }}/>
           )}
         </IconButton>
-        <IconButton component={Link} to="/form">
-          <SettingsOutlinedIcon />
+        <IconButton component={Link} to="/form" >
+          <SettingsOutlinedIcon sx={{ fontSize: "25px" }} />
         </IconButton>
-        <IconButton component={Link} to="/faq">
-          <Help />
+        <IconButton  component={Link} to="/faq" >
+          <Help sx={{ fontSize: "23px" }} />
         </IconButton>
-        
+
         <FormControl variant="standard" value="Anshu">
             <Select
               value="Anshu"
               sx={{
                 backgroundColor: {color: colors.primary[100]},
-                width: "150px",
+                width: "160px",
                 borderRadius: "0.25rem",
                 p: "0.25rem 1rem",
                 "& .MuiSvgIcon-root": {
@@ -58,12 +49,25 @@ const Topbar = () => {
                 },
                 "& .MuiSelect-select:focus": {
                   backgroundColor: {color: colors.primary[200]},
+
                 },
               }}
               input={<InputBase />}
             >
               <MenuItem  value="Anshu" >
-                <Typography variant="h5">Anshu</Typography>
+                <Box display='flex'  justifyContent="space-between" align-items= "center" >
+                <Box
+                  component="img"
+                  alt="profile"
+                  src={profileImage}
+                  height="40px"
+                  width="40px"
+                  borderRadius="50%"
+                  sx={{ objectFit: "cover" }}
+                  
+                />
+                <Typography variant="h5" sx={{ mt: "8px" }}>Anshu</Typography>
+                </Box>
               </MenuItem>
               <MenuItem>Log Out</MenuItem>
             </Select>
