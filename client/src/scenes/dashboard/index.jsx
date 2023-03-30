@@ -55,9 +55,6 @@ const Dashboard = () => {
             
             backgroundImage: 
             "url('../../assets/top.png')",
-            // "url('../../assets/image 8.png')",
-            // mixBlendMode : "overlay",
-            // opacity: 0.7,
             backgroundSize: "fit",
             backgroundPosition: "center",
           }}
@@ -97,30 +94,7 @@ const Dashboard = () => {
             <PieChart isDashboard={true} />
           </Box>
         </Box>
-        {/* <Box
-          gridColumn="span 5"
-          gridRow="span 3"
-          backgroundColor={colors.primary[400]}
-          
-          p="30px"
-        >
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <ProgressCircle size="125" />
-            <Typography
-              variant="h5"
-              color={colors.greenAccent[500]}
-              sx={{ mt: "15px" }}
-            >
-              $48,352 revenue generated
-            </Typography>
-            <Typography>Includes extra misc expenditures and costs</Typography>
-          </Box>
-        </Box> */}
+        
         {/* ROW 2 */}
 
         <Box
@@ -185,12 +159,6 @@ const Dashboard = () => {
           onClick={() => {
             navigate(`/menu`);
           }}
-          // gridColumn="span 6"
-          // gridRow="span "
-          // backgroundColor={colors.primary[400]}
-          // display="flex"
-          // alignItems="center"
-          // justifyContent="center"
           sx={{
             
             gridColumn: "span 6",
@@ -198,10 +166,8 @@ const Dashboard = () => {
 
             padding: "30px",
             backgroundImage: 
-            // "url('../../assets/Group 5.png')",
             "linear-gradient(45deg,rgba(32,41,62, 0.9),rgba(32,41,62, 0.7)), url('../../assets/image 6.png')",
             backgroundBlendMode : "overlay",
-            // opacity: 0.7,
             backgroundSize: "cover",
             backgroundPosition: "center",
             transitionTimingFunction: "ease-in",
@@ -211,7 +177,6 @@ const Dashboard = () => {
               paddingTop:"20px",
 
               backgroundImage: 
-              // "url('../../assets/Group 5.png')",
               "linear-gradient(45deg,rgba(32,41,62, 0.9),rgba(32,41,62, 0)), url('../../assets/image 6.png')",
               opacity: 1,
               
@@ -236,22 +201,13 @@ const Dashboard = () => {
         onClick={() => {
           navigate(`/calendar`);
         }}
-          // gridColumn="span 6"
-          // gridRow="span "
-          // backgroundColor={colors.primary[400]}
-          // display="flex"
-          // alignItems="center"
-          // justifyContent="center"
           sx={{
             gridColumn: "span 6",
             gridRow: "span ",
 
             padding: "30px",
             backgroundImage: 
-            // "url('../../assets/Group 5.png')",
             "linear-gradient(45deg,rgba(32,41,62, 0.9),rgba(32,41,62, 0.75)), url('../../assets/image 8.png')",
-            // mixBlendMode : "overlay",
-            // opacity: 0.7,
             backgroundSize: "cover",
             backgroundPosition: "center",
             '&:hover': {
@@ -259,7 +215,6 @@ const Dashboard = () => {
               paddingTop:"20px",
 
               backgroundImage: 
-            // "url('../../assets/Group 5.png')",
             "linear-gradient(45deg,rgba(32,41,62, 0.9),rgba(32,41,62, 0)), url('../../assets/image 8.png')",
             opacity: 1,
             }
@@ -370,42 +325,6 @@ const Dashboard = () => {
             <LineChart isDashboard={true} />
           </Box>
         </Box>
-        
-        
-        
-        {/* <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ padding: "30px 30px 0 30px" }}
-          >
-            Sales Quantity
-          </Typography>
-          <Box height="250px" mt="-20px">
-            <BarChart isDashboard={true} />
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          padding="30px"
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ marginBottom: "15px" }}
-          >
-            Geography Based Traffic
-          </Typography>
-          <Box height="200px">
-            <GeographyChart isDashboard={true} />
-          </Box>
-        </Box> */}
       </Box>
     </Box>
   );

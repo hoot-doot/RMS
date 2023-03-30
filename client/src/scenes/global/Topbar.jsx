@@ -6,14 +6,24 @@ import InputBase from "@mui/material/InputBase";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import Help from "@mui/icons-material/Help";
 import { Link } from 'react-router-dom';
+import { setLogin } from '../authSlice'; // Adjust the path according to your project structure
+import { useDispatch, useSelector } from "react-redux";
 
 const Topbar = () => {
+  const dispatch = useDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
+  const user = useSelector((state) => state.user);
+  console.log(user);
+  // const fullName = `${user.firstName} ${user.lastName}`;
+  function handleLogout() {
+    dispatch(setLogin(null));
+  }
+  
+  
 
   return (
     <Box display="flex" justifyContent="right" m={3} mb={0}>
@@ -59,7 +69,7 @@ const Topbar = () => {
                 <Box
                   component="img"
                   alt="profile"
-                  src={profileImage}
+                  src={`http://localhost:8800/image/picture-1680167605140-istockphoto-1208414307-612x612.jpg`}
                   height="40px"
                   width="40px"
                   borderRadius="50%"
@@ -69,7 +79,9 @@ const Topbar = () => {
                 <Typography variant="h5" sx={{ mt: "8px" }}>Anshu</Typography>
                 </Box>
               </MenuItem>
-              <MenuItem>Log Out</MenuItem>
+              <MenuItem onClick={handleLogout} component={Link} to="/">
+                Log Out
+              </MenuItem>
             </Select>
           </FormControl>
       </Box>
