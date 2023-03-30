@@ -52,7 +52,6 @@ const Dashboard = () => {
           alignItems="center"
           justifyContent="center"
           sx={{
-            
             backgroundImage: 
             "url('../../assets/top.png')",
             backgroundSize: "fit",
@@ -101,6 +100,7 @@ const Dashboard = () => {
           gridColumn="span 4"
           backgroundColor={colors.primary[400]}
           display="flex"
+          borderRadius={1}
           alignItems="center"
           justifyContent="center"
         >
@@ -121,6 +121,7 @@ const Dashboard = () => {
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
+          borderRadius={1}
           justifyContent="center"
         >
           <StatBox
@@ -140,6 +141,7 @@ const Dashboard = () => {
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
+          borderRadius={1}
           justifyContent="center"
         >
           <StatBox
@@ -321,7 +323,7 @@ const Dashboard = () => {
               </IconButton> */}
             </Box>
           </Box>
-          <Box height="320px" m="-20px 0 0 0">
+          <Box height="350px" m="-20px 10px 0 0">
             <LineChart isDashboard={true} />
           </Box>
         </Box>
