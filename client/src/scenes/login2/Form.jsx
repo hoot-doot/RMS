@@ -132,6 +132,7 @@ useEffect(() => {
       const response = await axios.get("http://localhost:8800/login");
       if (response.data.loggedIn === true) {
         setLoginStatus(response.data.user[0].firstName);
+        console.log(response.data.user[0].firstName);
         navigate("/dashboard");
       }
     } catch (error) {

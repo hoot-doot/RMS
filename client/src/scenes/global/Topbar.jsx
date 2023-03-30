@@ -11,16 +11,44 @@ import { Link } from 'react-router-dom';
 import { setLogin } from '../authSlice'; // Adjust the path according to your project structure
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-
+import { useEffect,useState } from "react";
 
 const Topbar = () => {
+  const [user, setUser] = useState("");
+  const [picture, setPicture] = useState("");
   const dispatch = useDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
-  const user = useSelector((state) => state.user);
-  console.log(user);
   // const fullName = `${user.firstName} ${user.lastName}`;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:8800/login");
+        if (response.data.loggedIn === true) {
+          setUser(response.data.user[0].firstName);
+          setPicture(response.data.user[0].picture);
+          console.log(response.data.user[0].picture);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
+  console.log(picture);
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await axios.get("http://localhost:8800/login");
+  //     if (response.data.loggedIn === true) {
+  //       const user = (response.data.user[0].firstName);
+  //       console.log(user);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+  // fetchData();
   const logout = () => {
     try {
       const response = axios.get("http://localhost:8800/logout");
@@ -51,9 +79,9 @@ const Topbar = () => {
           <Help sx={{ fontSize: "23px" }} />
         </IconButton>
 
-        <FormControl variant="standard" value="Anshu">
+        <FormControl variant="standard" value={user}>
             <Select
-              value="Anshu"
+              value={user}
               sx={{
                 backgroundColor: {color: colors.primary[100]},
                 width: "160px",
@@ -70,19 +98,21 @@ const Topbar = () => {
               }}
               input={<InputBase />}
             >
-              <MenuItem  value="Anshu" >
+              <MenuItem  value={user} >
                 <Box display='flex'  justifyContent="space-between" align-items= "center" >
                 <Box
                   component="img"
                   alt="profile"
-                  src={`http://localhost:8800/image/picture-1680167605140-istockphoto-1208414307-612x612.jpg`}
+                  // src={`http://localhost:8800/image/picture-1680167605140-istockphoto-1208414307-612x612.jpg`}
+                  // src={`${picture}`}
+                  src={`../../assets/${picture}`}
                   height="40px"
                   width="40px"
                   borderRadius="50%"
                   sx={{ objectFit: "cover" }}
                   
                 />
-                <Typography variant="h5" sx={{ mt: "8px" }}>Anshu</Typography>
+                <Typography variant="h5" sx={{ mt: "8px", ml:"10px" }}>{user}</Typography>
                 </Box>
               </MenuItem>
               <MenuItem onClick={logout} component={Link} to="/">

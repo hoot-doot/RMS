@@ -6,6 +6,7 @@ import { ColorModeContext, tokens } from "../../theme";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
+import axios from 'axios';
 const Form = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -25,10 +26,19 @@ const Form = () => {
   };
   const isNonMobile = useMediaQuery("(min-width:600px)");
   
-  const handleFormSubmit = (values) => {
+  const handleFormSubmit = async(values, onSubmitProps) => {
     console.log(values);
   };
-  
+  const register = async (values, onSubmitProps) => {
+    if (selectedOption === 'MENU'){
+      try {
+        const response = await axios.post("http://localhost:8800/menu", values);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+  console.log(selectedOption);
   // Render the dropdown component and the UI based on the selected option
   return (
     <Box  ml={2} mr={2}>

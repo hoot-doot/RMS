@@ -1,15 +1,29 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataTeam } from "../../data/mockData";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import Header from "../../components/Header";
+import { useEffect } from "react";
+import { useState } from "react";
+import axios from "axios";
 
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [teamData, setTeam] = useState([]);
+  useEffect(() => {
+    const fetchAllTeam = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/team");
+        setTeam(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchAllTeam();
+  }, []);
   const columns = [
     { field: "id", headerName: "ID" },
     {
@@ -100,7 +114,7 @@ const Team = () => {
           },
         }}
       >
-        <DataGrid checkboxSelection rows={mockDataTeam} columns={columns} />
+        <DataGrid checkboxSelection rows={teamData} columns={columns} />
       </Box>
     </Box>
   );

@@ -1,12 +1,25 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header";
-
+import { useEffect } from "react";
+import { useState } from "react";
+import axios from "axios";
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [invoicesData, setInvoices] = useState([]);
+  useEffect(() => {
+    const fetchAllInvoices = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/invoices");
+        setInvoices(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchAllInvoices();
+  }, []);
   const columns = [
     { field: "id", headerName: "ID" },
     {
@@ -74,7 +87,7 @@ const Invoices = () => {
           },
         }}
       >
-        <DataGrid checkboxSelection rows={mockDataInvoices} columns={columns} />
+        <DataGrid checkboxSelection rows={invoicesData} columns={columns} />
       </Box>
     </Box>
   );

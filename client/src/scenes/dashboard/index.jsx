@@ -2,7 +2,6 @@ import { Box,  Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { mockTransactions } from "../../data/mockData";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import TrafficIcon from "@mui/icons-material/Traffic";
@@ -11,19 +10,26 @@ import LineChart from "../../components/LineChart";
 import PieChart from "../../components/PieChart";
 import StatBox from "../../components/StatBox";
 import ProgressCircle from "../../components/ProgressCircle";
-import { IconButton } from "@mui/material";
-import { useContext } from "react";
-import { ColorModeContext } from "../../theme";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import { useEffect } from "react";
+import axios from "axios";
 
 
 const Dashboard = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const colors = tokens(theme.palette.mode);
+  const [transactionsData, setTransactions] = useState([]);
+  useEffect(() => {
+    const fetchAllTransactions = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/transactions");
+        setTransactions(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchAllTransactions();
+  }, []);
   return (
     
     <Box m="20px">
@@ -78,14 +84,14 @@ const Dashboard = () => {
                 fontWeight="600"
                 color={colors.grey[100]}
               >
-                Highest Earner
+                Menu
               </Typography>
               <Typography
                 variant="h3"
                 fontWeight="bold"
                 color={colors.greenAccent[500]}
               >
-                Noodles
+                Top Earners
               </Typography>
             </Box>
           </Box>
@@ -253,9 +259,9 @@ const Dashboard = () => {
               Recent Transactions
             </Typography>
           </Box>
-          {mockTransactions.map((transaction, i) => (
+          {transactionsData.map((transaction, i) => (
             <Box
-              key={`${transaction.txId}-${i}`}
+              key={`${transaction.txid}-${i}`}
               display="flex"
               justifyContent="space-between"
               alignItems="center"
@@ -268,7 +274,7 @@ const Dashboard = () => {
                   variant="h5"
                   fontWeight="600"
                 >
-                  {transaction.txId}
+                  {transaction.txid}
                 </Typography>
                 <Typography color={colors.grey[100]}>
                   {transaction.user}

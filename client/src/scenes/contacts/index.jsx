@@ -1,12 +1,12 @@
 import { Box } from "@mui/material";
 import { useEffect } from "react";
 import { useState } from "react";
+import axios from "axios";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
-import axios from "axios";
+
 
 const Contacts = () => {
   const [contactsData, setContacts] = useState([]);
