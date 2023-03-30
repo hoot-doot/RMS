@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
@@ -10,15 +10,14 @@ import Bar from "./scenes/bar";
 import Line from "./scenes/line";
 import Pie from "./scenes/pie";
 import FAQ from "./scenes/faq";
+import axios from 'axios';
 import Login from "./scenes/login"
 import Form from "./scenes/form";
-import { useSelector } from 'react-redux';
 import Menu from "./scenes/menu"
-import { Navigate } from 'react-router-dom';
-import { setLogin } from "./scenes/authSlice";
+import { useNavigate } from 'react-router-dom';
 
 // import Form2 from "./scenes/login3";
-import LoginPage from "./scenes/login3";
+import Form4 from "./scenes/login2";
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
@@ -26,11 +25,25 @@ import Calendar from "./scenes/calendar/calendar";
 
 
 function App() {
+  const navigate = useNavigate();
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
   const location = useLocation();
   const isLoginPage = location.pathname === "/"
-  const isAuth = Boolean(setLogin===null);
+  // const isAuth = Boolean(setLogin===null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:8800/login");
+        if (response.data.loggedIn === false) {
+          navigate("/");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -42,7 +55,7 @@ function App() {
             {!isLoginPage && <Topbar setIsSidebar={setIsSidebar} />}
             <Routes>
             
-              <Route path="/" element={<LoginPage />} />
+              <Route path="/" element={<Form4 />} />
               {/* <PrivateRoute> */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/team" element={<Team />} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { tokens } from "../../theme";
 import {
   Box,
@@ -45,7 +45,7 @@ const initialValuesLogin = {
 
 };
 
-const Form = () => {
+const Form4 = () => {
   
   const [pageType, setPageType] = useState("login");
   const dispatch = useDispatch();
@@ -55,7 +55,11 @@ const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
+  axios.defaults.withCredentials = true;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  const [loginStatus, setLoginStatus] = useState("");
   
   const register = async (values, onSubmitProps) => {
     const formData = new FormData();
@@ -111,19 +115,32 @@ const Form = () => {
 // Inside the login function
 
 const login = async (values, onSubmitProps) => {
-  try {
-    const response = await axios.post("http://localhost:8800/login", values);
-    const loggedIn = response.data;
-    onSubmitProps.resetForm();
-
-    if (loggedIn) {
-      dispatch(setLogin({ user: loggedIn.user }));
-      navigate("/menu");
-    }
-  } catch (error) {
-    console.error(error);
+  const response = await axios.post("http://localhost:8800/login", values);
+  onSubmitProps.resetForm();
+  if (response.data.message) {
+    setLoginStatus(response.data.message);
+    
+  } else {
+    setLoginStatus(response.data[0].firstName);
+    navigate("/dashboard");
   }
 };
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://localhost:8800/login");
+      if (response.data.loggedIn === true) {
+        setLoginStatus(response.data.user[0].firstName);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  fetchData();
+}, []);
+  
 // const login = async (values, onSubmitProps) => {
 //   const loggedInResponse = await fetch("http://localhost:8800/login", {
 //     method: "POST",
@@ -240,6 +257,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               helperText={touched.email && errors.email}
               sx={{ gridColumn: "span 4" }}
             />
+            
             <TextField
               label="Password"
               type="password"
@@ -251,6 +269,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               helperText={touched.password && errors.password}
               sx={{ gridColumn: "span 4" }}
             />
+            <Typography fontSize={"11px"} color={"red"}>{loginStatus}</Typography>
           </Box>
 
           {/* BUTTONS */}
@@ -293,4 +312,4 @@ const handleFormSubmit = async (values, onSubmitProps) => {
   );
 };
 
-export default Form;
+export default Form4;

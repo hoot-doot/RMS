@@ -10,6 +10,8 @@ import Help from "@mui/icons-material/Help";
 import { Link } from 'react-router-dom';
 import { setLogin } from '../authSlice'; // Adjust the path according to your project structure
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+
 
 const Topbar = () => {
   const dispatch = useDispatch();
@@ -19,8 +21,12 @@ const Topbar = () => {
   const user = useSelector((state) => state.user);
   console.log(user);
   // const fullName = `${user.firstName} ${user.lastName}`;
-  function handleLogout() {
-    dispatch(setLogin(null));
+  const logout = () => {
+    try {
+      const response = axios.get("http://localhost:8800/logout");
+    } catch (error) {
+      console.log(error);
+    }
   }
   
   
@@ -79,7 +85,7 @@ const Topbar = () => {
                 <Typography variant="h5" sx={{ mt: "8px" }}>Anshu</Typography>
                 </Box>
               </MenuItem>
-              <MenuItem onClick={handleLogout} component={Link} to="/">
+              <MenuItem onClick={logout} component={Link} to="/">
                 Log Out
               </MenuItem>
             </Select>
