@@ -13,11 +13,20 @@ const LoginPage = () => {
     <Box>
       <Box
         width="100%"
-        backgroundColor={colors.greenAccent[600]}
+        backgroundColor={colors.primary[500]}
         p="1rem 6%"
         textAlign="center"
+        
       >
+        <img
+                  alt="profile-user"
+                  width="150px"
+                  height="150px"
+                  src={`../../assets/1.png`}
+                  style={{ cursor: "pointer", borderRadius: "50%" }}
+                />
         <Typography fontWeight="bold" fontSize="32px" color="grey[900]">
+          
           Resturant Management System
         </Typography>
       </Box>
@@ -31,11 +40,13 @@ const LoginPage = () => {
         
         
       >
+        
         <Box 
         justifyContent="space-between"
         display={"flex"}>
+          
         <Typography fontWeight="500" variant="h5" sx={{ mb: "1.5rem" }}>
-          Welcome to Socipedia, the Social Media for Sociopaths!
+          Welcome to Cosmo!
         </Typography>
 
         <IconButton onClick={colorMode.toggleColorMode}>
