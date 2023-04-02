@@ -76,8 +76,8 @@ app.post('/register', upload.single('picture'), (req, res) => {
   const lastName = req.body.lastName;
   const email = req.body.email;
   const password = req.body.password;
-  const picture = req.file.path;
-
+  const picturePath = req.file.path;
+  const picture = path.basename(picturePath);
   // console.log('Received data:', req.body, req.file); 
   bcrypt.hash(password, saltRounds, (err, hash) => {
     if (err) {
@@ -237,7 +237,7 @@ app.post("/invoices", (req, res) => {
 });
 
 app.get("/invoices", (req, res) => {
-  const q = "SELECT * FROM invoice";
+  const q = "SELECT * FROM invoices";
   db.query(q, (err, data) => {
     if (err) {
       console.log(err);
@@ -284,7 +284,7 @@ app.get("/team", (req, res) => {
   });
 });
 app.get("/transactions", (req, res) => {
-  const q = "SELECT * FROM transaction";
+  const q = "SELECT * FROM transactions";
   db.query(q, (err, data) => {
     if (err) {
       console.log(err);
@@ -296,7 +296,7 @@ app.get("/transactions", (req, res) => {
 
 app.get('/image/:imageName', (req, res) => {
   const imageName = req.params.imageName;
-  const imagePath = path.join(__dirname, 'assets', imageName);  
+  const imagePath = path.join(__dirname, 'public', 'assets', imageName);  
   res.sendFile(imagePath);
 });
 
