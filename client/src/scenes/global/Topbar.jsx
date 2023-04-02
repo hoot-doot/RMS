@@ -103,9 +103,9 @@ const Topbar = () => {
                 <Box
                   component="img"
                   alt="profile"
-                  // src={`http://localhost:8800/image/picture-1680167605140-istockphoto-1208414307-612x612.jpg`}
+                  src={`http://localhost:8800/image/${picture}`}
                   // src={`${picture}`}
-                  src={`../../assets/${picture}`}
+                  // src={`../../assets/${picture}`}
                   height="40px"
                   width="40px"
                   borderRadius="50%"

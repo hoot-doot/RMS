@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import Dropzone from "react-dropzone";
 import axios from 'axios';
 import { setLogin } from '../authSlice';
+import React from 'react';
 
 
 const registerSchema = yup.object().shape({
@@ -56,24 +57,28 @@ const Form4 = () => {
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
   axios.defaults.withCredentials = true;
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const [loginStatus, setLoginStatus] = useState("");
+
+  const [ isAlertVisible, setIsAlertVisible ] = React.useState(false);
+
+    const handleButtonClick = () => {
+        setIsAlertVisible(true);
+
+        setTimeout(() => {
+            setIsAlertVisible(false);
+        }, 5000);
+    }
   
   const register = async (values, onSubmitProps) => {
     const formData = new FormData();
     for (let value in values) {
       formData.append(value, values[value]);
     }
-    
-  
     // Log the contents of the FormData object
     console.log('FormData field names:');
     for (let key of formData.keys()) {
     console.log(key);
 }
-  
     try {
       const response = await axios.post('http://localhost:8800/register', formData, {
         headers: {
@@ -82,10 +87,22 @@ const Form4 = () => {
       });
       const savedUser = response.data;
       onSubmitProps.resetForm();
-  
       if (savedUser) {
         setPageType('login');
+        setLoginStatus(response.data.message);
       }
+      else{
+        setLoginStatus(response.data.message);
+      }
+      // if (response.data.message) {
+      //   setLoginStatus(response.data.message);
+      //   setPageType('login');
+      // } else {
+      //   if (savedUser) {
+      //     setPageType('login');
+      //   }
+      // }
+      
     } catch (error) {
       console.error(error);
     }
@@ -122,6 +139,7 @@ const login = async (values, onSubmitProps) => {
     
   } else {
     setLoginStatus(response.data[0].firstName);
+    console.log(response.data);
     navigate("/dashboard");
   }
 };
@@ -270,7 +288,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               helperText={touched.password && errors.password}
               sx={{ gridColumn: "span 4" }}
             />
-            <Typography fontSize={"11px"} color={"red"}>{loginStatus}</Typography>
+            <Typography fontSize={"11px"} color={"red"}>{isAlertVisible&&loginStatus}</Typography>
           </Box>
 
           {/* BUTTONS */}
@@ -282,30 +300,51 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                 m: "2rem 0",
                 p: "1rem",
                 backgroundColor: colors.primary[500],
-                color: colors.greenAccent[500],
-                "&:hover": { backgroundColor: colors.greenAccent[500],color: colors.primary[500] },
+                color: "#fcfcfc",
+                "&:hover": { backgroundColor: colors.greenAccent[400],color:"black" },
               }}
+              onClick={handleButtonClick}
+              
             >
+              
               {isLogin ? "LOGIN" : "REGISTER"}
             </Button>
-            <Typography
-              onClick={() => {
-                setPageType(isLogin ? "register" : "login");
-                resetForm();
-              }}
-              sx={{
-                textDecoration: "underline",
-                color: colors.grey[500],
-                "&:hover": {
-                  cursor: "pointer",
-                  color: colors.grey[100],
-                },
-              }}
-            >
-              {isLogin
-                ? "Don't have an account? Sign Up here."
-                : "Already have an account? Login here."}
-            </Typography>
+            <Box display={"flex"} justifyContent="space-between">
+              <Typography
+                onClick={() => {
+                  setPageType(isLogin ? "register" : "login");
+                  resetForm();
+                }}
+                sx={{
+                  textDecoration: "underline",
+                  color: colors.grey[500],
+                  "&:hover": {
+                    cursor: "pointer",
+                    color: colors.grey[100],
+                  },
+                }}
+              >
+                {isLogin
+                  ? "Don't have an account? Sign Up here."
+                  : "Already have an account? Login here."}
+              </Typography>
+              <Typography
+                onClick={() => {
+                  navigate("/forgot password");
+                }}
+                sx={{
+                  textDecoration: "underline",
+                  color: colors.grey[500],
+                  "&:hover": {
+                    cursor: "pointer",
+                    color: colors.grey[100],
+                  },
+                }}
+              >
+                
+                {isLogin && "Forgot your password?"}
+              </Typography>
+          </Box>
           </Box>
         </form>
       )}

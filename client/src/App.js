@@ -15,10 +15,8 @@ import Login from "./scenes/login"
 import Form from "./scenes/form";
 import Menu from "./scenes/menu"
 import { useNavigate } from 'react-router-dom';
-
 // import Form2 from "./scenes/login3";
 import Form4 from "./scenes/login2";
-
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
@@ -55,8 +53,8 @@ function App() {
             {!isLoginPage && <Topbar setIsSidebar={setIsSidebar} />}
             <Routes>
             
+            
               <Route path="/" element={<Form4 />} />
-              {/* <PrivateRoute> */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/team" element={<Team />} />
               <Route path="/form" element={<Form />} />
@@ -68,7 +66,7 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/menu" element={<Menu />} />
-              {/* </PrivateRoute> */}
+
             </Routes>
           </main>
         </div>

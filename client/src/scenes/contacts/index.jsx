@@ -14,7 +14,7 @@ const Contacts = () => {
   useEffect(() => {
     const fetchAllContacts = async () => {
       try {
-        const res = await axios.get("http://localhost:8800/contacts");
+        const res = await axios.get("http://localhost:8800/contact");
         setContacts(res.data);
       } catch (err) {
         console.log(err);

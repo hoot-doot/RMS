@@ -16,7 +16,7 @@ const Team = () => {
   useEffect(() => {
     const fetchAllTeam = async () => {
       try {
-        const res = await axios.get("http://localhost:8800/team");
+        const res = await axios.get("http://localhost:8800/teams");
         setTeam(res.data);
       } catch (err) {
         console.log(err);

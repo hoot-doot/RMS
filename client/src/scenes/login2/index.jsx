@@ -25,7 +25,7 @@ const LoginPage = () => {
                   src={`../../assets/1.png`}
                   style={{ cursor: "pointer", borderRadius: "50%" }}
                 />
-        <Typography fontWeight="bold" fontSize="32px" color="grey[900]">
+        <Typography fontWeight="bold" fontSize="32px" color="white">
           
           Resturant Management System
         </Typography>

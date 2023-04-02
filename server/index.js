@@ -8,9 +8,13 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import multer from 'multer';
 import path from "path";
+import dotenv from "dotenv";
+import Mailgen from "mailgen";
+import nodemailer from "nodemailer"
+import { fileURLToPath } from "url";
 
-const __dirname = path.resolve();
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 function generateSecret() {
@@ -19,14 +23,16 @@ function generateSecret() {
 
 // Use an environment variable to store the secret, or generate a new one if it doesn't exist
 const secret = process.env.SESSION_SECRET || generateSecret();
-
 const saltRounds = 10;
 
 
 
 const app = express();
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+
+
 app.use(cors({
-  origin: ["http://localhost:5005"],
+  origin: ["http://localhost:5001"],
   methods: ["GET", "POST"],
   credentials: true,
 }));
@@ -55,15 +61,14 @@ const db = mysql.createConnection({
 
 // Configure multer storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+  destination: function (req, file, cb) {
+    cb(null, "public/assets");
   },
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     cb(null, file.originalname);
   },
 });
-
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 // Update the /register route to handle file uploads
 app.post('/register', upload.single('picture'), (req, res) => {
@@ -72,24 +77,53 @@ app.post('/register', upload.single('picture'), (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const picture = req.file.path;
-  console.log('Received data:', req.body, req.file); // Add this line to log the received data
+
+  // console.log('Received data:', req.body, req.file); 
   bcrypt.hash(password, saltRounds, (err, hash) => {
     if (err) {
       console.log('Error hashing password:', err);
       return res.status(500).send({ error: 'Internal Server Error' });
     }
+    const query = `SELECT * FROM user WHERE email='${email}'`;
+    db.query(query, (err, results) => {
+      if (err){
+        return res.status(500).json({message: 'Server error'});
+      };
+      console.log(results);
 
-    db.query(
-      "INSERT INTO user (firstName, lastName, email, password, picture) VALUES (?, ?, ?, ?, ?)",
-      [firstName, lastName, email, hash, picture],
-      (err, result) => {
-        if (err) {
-          console.log('Error inserting user into database:', err);
-          return res.status(500).send({ error: 'Internal Server Error' });
-        }
-        res.status(200).send({ message: 'User registered successfully' });
+  
+      if (results.length > 0) {
+        // If the username is taken, return an error message
+        console.log(results);
+        res.send({ message: "Email already used!" });
+      } else {
+        // If the username is available, insert the new user into the database
+        db.query(
+        "INSERT INTO user (firstName, lastName, email, password, picture) VALUES (?, ?, ?, ?, ?)",
+        [firstName, lastName, email, hash, picture],
+        (err, result) => {
+            if (err) {
+              console.log('Error inserting user into database:', err);
+              return res.status(500).send({ error: 'Internal Server Error' });
+            }
+          // Return a success message
+          res.status(201).json({ message: 'User created successfully' });
+        });
       }
-    );
+    });
+
+
+    // db.query(
+    //   "INSERT INTO user (firstName, lastName, email, password, picture) VALUES (?, ?, ?, ?, ?)",
+    //   [firstName, lastName, email, hash, picture],
+    //   (err, result) => {
+    //     if (err) {
+    //       console.log('Error inserting user into database:', err);
+    //       return res.status(500).send({ error: 'Internal Server Error' });
+    //     }
+    //     res.status(200).send({ message: 'User registered successfully' });
+    //   }
+    // );
   });
 });
 
@@ -139,7 +173,8 @@ app.post("/login", (req, res) => {
             // console.log(result);
             req.session.email = result;
             console.log(req.session.email);
-            res.send(result);
+            const users = result.map(({ firstName, lastName, email, picture }) => ({ firstName, lastName, email, picture }));
+            res.send(users);
           } else {
             res.send({ message: "Wrong email/password combination!" });
           }
@@ -202,7 +237,7 @@ app.post("/invoices", (req, res) => {
 });
 
 app.get("/invoices", (req, res) => {
-  const q = "SELECT * FROM invoices";
+  const q = "SELECT * FROM invoice";
   db.query(q, (err, data) => {
     if (err) {
       console.log(err);
@@ -249,7 +284,7 @@ app.get("/team", (req, res) => {
   });
 });
 app.get("/transactions", (req, res) => {
-  const q = "SELECT * FROM transactions";
+  const q = "SELECT * FROM transaction";
   db.query(q, (err, data) => {
     if (err) {
       console.log(err);
@@ -261,13 +296,61 @@ app.get("/transactions", (req, res) => {
 
 app.get('/image/:imageName', (req, res) => {
   const imageName = req.params.imageName;
-
-  const imagePath = __dirname + '/uploads/' + imageName;
-
-  console.log("imagePath");
-  console.log(imageName);
-  
+  const imagePath = path.join(__dirname, 'assets', imageName);  
   res.sendFile(imagePath);
+});
+
+
+
+app.post("/mail", (req, res) => {
+
+
+    let config = {
+        service : 'gmail',
+        auth : {
+            user: "canshu0101@gmail.com",
+            pass: "icaqrjginiehseol"
+
+        }
+    }
+
+    let transporter = nodemailer.createTransport(config);
+
+    let MailGenerator = new Mailgen({
+        theme: "default",
+        product : {
+            name: "Mailgen",
+            link : 'https://mailgen.js/'
+        }
+    })
+
+    let response = {
+        body: {
+            name : "Reset Password",
+            intro: ["Your bill has arrived!","OTP : 324225"],
+            outro: "Looking forward to do more business",
+            copyright: 'Copyright © 2023 Cosmo. All rights reserved.'
+        }
+    }
+
+    let mail = MailGenerator.generate(response)
+
+    let message = {
+        from : "canshu0101@gmail.com",
+        to : "canshu911@gmail.com",
+        subject: "Place Order",
+        html: mail
+    }
+
+    transporter.sendMail(message).then(() => {
+        return res.status(201).json({
+            msg: "you should receive an email"
+        })
+    }).catch(error => {
+        return res.status(500).json({ error })
+    })
+
+    // res.status(201).json("getBill Successfully...!");
 });
 
 
