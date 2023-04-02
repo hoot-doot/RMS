@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+dotenv.config();
 
 function generateSecret() {
   return crypto.randomBytes(32).toString('hex');
@@ -25,11 +25,9 @@ function generateSecret() {
 const secret = process.env.SESSION_SECRET || generateSecret();
 const saltRounds = 10;
 
-
-
+console.log(process.env.EMAIL_PASS);
 const app = express();
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
-
 
 app.use(cors({
   origin: ["http://localhost:5001"],
@@ -39,6 +37,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use(
   session({
@@ -53,10 +52,10 @@ app.use(
 );
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "#screwed",
-  database: "RMS",
+  host: process.env.SQL_HOST,
+  user: process.env.SQL_USER,
+  password: process.env.SQL_PASSWORD,
+  database: process.env.SQL_DB,
 });
 
 // Configure multer storage
@@ -308,8 +307,8 @@ app.post("/mail", (req, res) => {
     let config = {
         service : 'gmail',
         auth : {
-            user: "canshu0101@gmail.com",
-            pass: "icaqrjginiehseol"
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASS
 
         }
     }
@@ -336,8 +335,8 @@ app.post("/mail", (req, res) => {
     let mail = MailGenerator.generate(response)
 
     let message = {
-        from : "canshu0101@gmail.com",
-        to : "canshu911@gmail.com",
+        from : process.env.EMAIL,
+        to : req,
         subject: "Place Order",
         html: mail
     }
