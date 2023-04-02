@@ -11,8 +11,6 @@ import path from "path";
 
 const __dirname = path.resolve();
 
-
-
 function generateSecret() {
   return crypto.randomBytes(32).toString('hex');
 }
