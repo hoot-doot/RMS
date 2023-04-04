@@ -318,7 +318,7 @@ app.post("/mail", (req, res) => {
     let MailGenerator = new Mailgen({
         theme: "default",
         product : {
-            name: "Mailgen",
+            name: "Cosmo",
             link : 'https://mailgen.js/'
         }
     })
@@ -335,8 +335,8 @@ app.post("/mail", (req, res) => {
     let mail = MailGenerator.generate(response)
 
     let message = {
-        from : process.env.EMAIL,
-        to : req,
+        from : "Cosmo Cafe",
+        to : req.body.email,
         subject: "Place Order",
         html: mail
     }
