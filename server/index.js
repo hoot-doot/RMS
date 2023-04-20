@@ -25,7 +25,6 @@ function generateSecret() {
 const secret = process.env.SESSION_SECRET || generateSecret();
 const saltRounds = 10;
 
-console.log(process.env.EMAIL_PASS);
 const app = express();
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
@@ -77,7 +76,6 @@ app.post('/register', upload.single('picture'), (req, res) => {
   const password = req.body.password;
   const picturePath = req.file.path;
   const picture = path.basename(picturePath);
-  // console.log('Received data:', req.body, req.file); 
   bcrypt.hash(password, saltRounds, (err, hash) => {
     if (err) {
       console.log('Error hashing password:', err);
@@ -318,7 +316,7 @@ app.post("/mail", (req, res) => {
     let MailGenerator = new Mailgen({
         theme: "default",
         product : {
-            name: "Cosmo",
+            name: "Cosmo Cafe",
             link : 'https://mailgen.js/'
         }
     })

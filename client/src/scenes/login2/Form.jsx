@@ -17,7 +17,7 @@ import Dropzone from "react-dropzone";
 import axios from 'axios';
 import { setLogin } from '../authSlice';
 import React from 'react';
-
+import OTP from "./OTP";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -329,9 +329,9 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                   : "Already have an account? Login here."}
               </Typography>
               <Typography
-                onClick={() => {
-                  navigate("/forgot password");
-                }}
+                // onClick={() => {
+                //   navigate("/OTP");
+                // }}
                 sx={{
                   textDecoration: "underline",
                   color: colors.grey[500],
@@ -342,7 +342,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                 }}
               >
                 
-                {isLogin && "Forgot your password?"}
+                {/* {isLogin && "Forgot your password?"} */}
               </Typography>
           </Box>
           </Box>
