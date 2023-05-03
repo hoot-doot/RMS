@@ -18,6 +18,8 @@ import axios from 'axios';
 import { setLogin } from '../authSlice';
 import React from 'react';
 import OTP from "./OTP";
+import Popup from "./Popup";
+import ReactModel from "react-modal";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -47,9 +49,8 @@ const initialValuesLogin = {
 };
 
 const Form4 = () => {
-  
+  const [isOpen, setIsOpen] = useState(false);
   const [pageType, setPageType] = useState("login");
-  const dispatch = useDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
@@ -58,9 +59,8 @@ const Form4 = () => {
   const isRegister = pageType === "register";
   axios.defaults.withCredentials = true;
   const [loginStatus, setLoginStatus] = useState("");
-
   const [ isAlertVisible, setIsAlertVisible ] = React.useState(false);
-
+  
     const handleButtonClick = () => {
         setIsAlertVisible(true);
 
@@ -335,6 +335,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                 sx={{
                   textDecoration: "underline",
                   color: colors.grey[500],
+                  onClick:{setIsOpen},
                   "&:hover": {
                     cursor: "pointer",
                     color: colors.grey[100],
@@ -342,8 +343,9 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                 }}
               >
                 
-                {/* {isLogin && "Forgot your password?"} */}
+                {isLogin && <Popup/>}
               </Typography>
+              
           </Box>
           </Box>
         </form>

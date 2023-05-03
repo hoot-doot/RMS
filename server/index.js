@@ -29,7 +29,7 @@ const app = express();
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 app.use(cors({
-  origin: ["http://localhost:5001"],
+  origin: ["http://localhost:5002"],
   methods: ["GET", "POST"],
   credentials: true,
 }));
@@ -299,9 +299,14 @@ app.get('/image/:imageName', (req, res) => {
 
 
 
-app.post("/mail", (req, res) => {
-
-
+app.post("/mail", async(req, res) => {
+  const { email } = req.body;
+  try {
+    // Check if email exists in database
+    const [rows, fields] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
     let config = {
         service : 'gmail',
         auth : {
@@ -311,6 +316,7 @@ app.post("/mail", (req, res) => {
         }
     }
 
+    // Create transporter
     let transporter = nodemailer.createTransport(config);
 
     let MailGenerator = new Mailgen({
@@ -334,7 +340,7 @@ app.post("/mail", (req, res) => {
 
     let message = {
         from : "Cosmo Cafe",
-        to : req.body.email,
+        to : email,
         subject: "Place Order",
         html: mail
     }
@@ -346,10 +352,11 @@ app.post("/mail", (req, res) => {
     }).catch(error => {
         return res.status(500).json({ error })
     })
-
-    // res.status(201).json("getBill Successfully...!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to send email' });
+  }
 });
-
 
 app.listen(8800, () => {
   console.log("Connected to backend.");

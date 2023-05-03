@@ -51,7 +51,7 @@ const Dashboard = () => {
        
         
         <Box
-          gridColumn="span 12"
+          Column="span 12"
           gridRow= "span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
