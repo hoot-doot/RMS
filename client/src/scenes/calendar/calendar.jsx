@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
+import { mockCalendarData as data } from "../../data/mockData";
 
 const Calendar = () => {
   const theme = useTheme();
@@ -109,18 +110,7 @@ const Calendar = () => {
             select={handleDateClick}
             eventClick={handleEventClick}
             eventsSet={(events) => setCurrentEvents(events)}
-            initialEvents={[
-              {
-                id: "12315",
-                title: "All-day event",
-                date: "2022-09-14",
-              },
-              {
-                id: "5123",
-                title: "ok event",
-                date: "2022-09-30",
-              },
-            ]}
+            initialEvents={data}
           />
         </Box>
       </Box>

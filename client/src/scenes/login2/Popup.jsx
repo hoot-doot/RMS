@@ -1,20 +1,37 @@
-import * as React from 'react';
-import Popover from '@mui/material/Popover';
-import Button from '@mui/material/Button';
+import * as React from "react";
+import { useState } from "react";
+import Popover from "@mui/material/Popover";
+import Button from "@mui/material/Button";
 import { useContext } from "react";
-import { ColorModeContext,tokens } from "../../theme";
-import { Box, Typography, useTheme, useMediaQuery,TextField } from "@mui/material";
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import axios from 'axios';
+import { ColorModeContext, tokens } from "../../theme";
+import {
+  Box,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  TextField,
+} from "@mui/material";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import axios from "axios";
 
 export default function Popup() {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
   const [step, setStep] = React.useState(1);
-  const [email, setEmail] = React.useState('');
-  const [otp, setOtp] = React.useState('');
-  const [newPassword, setNewPassword] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [otp, setOtp] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [loginStatus, setLoginStatus] = useState("");
+  const [isAlertVisible, setIsAlertVisible] = React.useState(false);
+
+  const handleButtonClick = () => {
+    setIsAlertVisible(true);
+
+    setTimeout(() => {
+      setIsAlertVisible(false);
+    }, 4000);
+  };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleClick = (event) => {
@@ -29,33 +46,44 @@ export default function Popup() {
         handleClose();
       }
     };
-    window.addEventListener('click', handleClickOutside);
+    window.addEventListener("click", handleClickOutside);
     return () => {
-      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener("click", handleClickOutside);
     };
   }, [anchorEl]);
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   const handleEmailSubmit = async (event) => {
+    console.log(email);
     event.preventDefault();
     try {
-      const response = await axios.post('/api/forgot-password/email', { email });
-      if (response.status === 200) {
+      setLoginStatus("Loading...");
+      const response = await axios.post("http://localhost:8800/mail", {
+        email: email,
+      });
+      if (response.data.msg) {
         setStep(2);
       }
     } catch (error) {
-      console.error(error);
+      setLoginStatus("Email doesnt exist!");
     }
   };
 
   const handleOtpSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('/api/forgot-password/otp', { email, otp });
-      if (response.status === 200) {
+      const response = await axios.get("http://localhost:8800/verify-otp", {
+        params: {
+          code: otp,
+        },
+      });
+      if (response.data.msg) {
         setStep(3);
+        setLoginStatus("");
+      } else {
+        setLoginStatus(response.data.err);
       }
     } catch (error) {
       console.error(error);
@@ -65,31 +93,49 @@ export default function Popup() {
   const handleNewPasswordSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('/api/forgot-password/new-password', { email, otp, newPassword });
-      if (response.status === 200) {
+      console.log(password);
+      console.log(email);
+      const response = await axios.put(
+        "http://localhost:8800/reset-password",
+        { email: email, password: password }
+      );
+      if (response.data.msg) {
         handleClose();
+      } else {
+        setLoginStatus(response.data.message);
       }
     } catch (error) {
       console.error(error);
     }
   };
-  
 
   return (
     <Box>
-      <Typography aria-describedby={id} variant="body1" onClick={handleClick}>
-      Forgot your password?
+      <Typography
+        aria-describedby={id}
+        variant="body1"
+        onClick={handleClick}
+        sx={{
+          textDecoration: "underline",
+          color: colors.grey[500],
+          "&:hover": {
+            cursor: "pointer",
+            color: colors.grey[100],
+          },
+        }}
+      >
+        Forgot your password?
       </Typography>
 
       {open && (
         <Box
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '180%',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            width: "100%",
+            height: "180%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 1,
           }}
           onClick={handleClose}
@@ -98,67 +144,85 @@ export default function Popup() {
       <Popover
         id={id}
         open={open}
-        anchorReference={'none'}
+        anchorReference={"none"}
         anchorEl={anchorEl}
         onClose={handleClose}
         sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 2,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 2,
         }}
       >
-        <Box 
-        display="flex" justifyContent="center" flex-direction="column"
-        sx={{
+        <Box
+          display="flex"
+          justifyContent="center"
+          flex-direction="column"
+          sx={{
             p: 2,
             backgroundColor: colors.primary[400],
-            width: '60vh',
-            height: '45vh',
-            borderRadius: '10px',
-            }}
-            onClick={(event) => event.stopPropagation()}>
-
-        <Box>   
-            <Box m={"auto"} sx={{
-                mt:3,
+            width: "60vh",
+            height: "45vh",
+            borderRadius: "10px",
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Box>
+            <Box
+              m={"auto"}
+              sx={{
+                mt: 3,
                 backgroundColor: colors.blueAccent[100],
-                borderRadius: '50%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100px',
-                height: '100px',
-             }}>
-                <Box sx={{
-                    backgroundColor: colors.blueAccent[200],
-                    borderRadius: '50%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '50px',
-                    height: '50px',
-                }}>
-                    <VpnKeyIcon sx={{ color: colors.blueAccent[600], fontSize: "36px" }}/>
-                </Box>
+                borderRadius: "50%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100px",
+                height: "100px",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.blueAccent[200],
+                  borderRadius: "50%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "50px",
+                  height: "50px",
+                }}
+              >
+                <VpnKeyIcon
+                  sx={{ color: colors.blueAccent[600], fontSize: "36px" }}
+                />
+              </Box>
             </Box>
-            <Typography variant="h2" fontWeight={600} sx={{
-              mt: 4,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                 }}>
-                  FORGOT PASSWORD
-                </Typography>
+            <Typography
+              variant="h2"
+              fontWeight={600}
+              sx={{
+                mt: 4,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              FORGOT PASSWORD
+            </Typography>
             {step === 1 && (
               <Box>
-                <Typography variant="h5" sx={{ mb: 1,
-                mt: 3,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%', }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 1,
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                >
                   Provide your account's email
                 </Typography>
                 <form onSubmit={handleEmailSubmit}>
@@ -167,20 +231,34 @@ export default function Popup() {
                     value={email}
                     label="Email Address"
                     onChange={(event) => setEmail(event.target.value)}
-                    inputProps={{style: {width: 400}}} // font size of input text
-                    InputLabelProps={{style: {fontSize: 15}}} // font size of input label
-                    sx={{ mb: 4, display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    height: '100%', }}
+                    inputProps={{ style: { width: 400 } }} // font size of input text
+                    InputLabelProps={{ style: { fontSize: 15 } }} // font size of input label
+                    sx={{
+                      mb: 1,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
                   />
-                  <Button type="submit" variant="contained" sx={{ backgroundColor: colors.blueAccent[200],
-                  width: '50%', 
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: 'auto'}}>
+                  <Typography fontSize={"13px"} color={"red"}>
+                    {isAlertVisible && loginStatus}
+                  </Typography>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: colors.blueAccent[200],
+                      width: "50%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      margin: "auto",
+                      mt: 3,
+                    }}
+                    onClick={handleButtonClick}
+                  >
                     Submit
                   </Button>
                 </form>
@@ -188,7 +266,7 @@ export default function Popup() {
             )}
             {step === 2 && (
               <Box>
-                <Typography variant="h6" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2, mt: 2 }}>
                   Enter the OTP sent to your email
                 </Typography>
                 <form onSubmit={handleOtpSubmit}>
@@ -196,10 +274,28 @@ export default function Popup() {
                     label="OTP"
                     variant="outlined"
                     value={otp}
+                    inputProps={{ style: { width: 300 } }} // font size of input text
+                    InputLabelProps={{ style: { fontSize: 15 } }} // font size of input label
                     onChange={(event) => setOtp(event.target.value)}
                     sx={{ mb: 2 }}
                   />
-                  <Button type = "submit" variant="contained" sx={{ backgroundColor: colors.blueAccent[200] }}>
+                  <Typography fontSize={"11px"} color={"red"}>
+                    {isAlertVisible && loginStatus}
+                  </Typography>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: colors.blueAccent[200],
+                      width: "50%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      margin: "auto",
+                      mt: 3,
+                    }}
+                    onClick={handleButtonClick}
+                  >
                     Submit
                   </Button>
                 </form>
@@ -207,7 +303,7 @@ export default function Popup() {
             )}
             {step === 3 && (
               <Box>
-                <Typography variant="h6" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2, mt:2 }}>
                   Enter your new password
                 </Typography>
                 <form onSubmit={handleNewPasswordSubmit}>
@@ -215,21 +311,37 @@ export default function Popup() {
                     label="New Password"
                     variant="outlined"
                     type="password"
-                    value={newPassword}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                    sx={{ mb: 2 }}
+                    value={password}
+                    inputProps={{ style: { width: 300 } }} // font size of input text
+                    InputLabelProps={{ style: { fontSize: 15 } }} // font size of input label
+                    onChange={(event) => setPassword(event.target.value)}
+                    sx={{ mb: 1 }}
                   />
-                  <Button type="submit" variant="contained" sx={{ backgroundColor: colors.blueAccent[200] }}>
+                  <Typography fontSize={"11px"} color={"red"}>
+                    {isAlertVisible && loginStatus}
+                  </Typography>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: colors.blueAccent[200],
+                      width: "50%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      margin: "auto",
+                      mt: 3,
+                    }}
+                    onClick={handleButtonClick}
+                  >
                     Submit
                   </Button>
                 </form>
               </Box>
             )}
-        </Box>
+          </Box>
         </Box>
       </Popover>
-
     </Box>
   );
 }
-

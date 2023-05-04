@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { tokens } from "../../theme";
 import {
   Box,
@@ -14,12 +14,10 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import Dropzone from "react-dropzone";
-import axios from 'axios';
-import { setLogin } from '../authSlice';
-import React from 'react';
-import OTP from "./OTP";
+import axios from "axios";
+import { setLogin } from "../authSlice";
+import React from "react";
 import Popup from "./Popup";
-import ReactModel from "react-modal";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -45,7 +43,6 @@ const initialValuesRegister = {
 const initialValuesLogin = {
   email: "",
   password: "",
-
 };
 
 const Form4 = () => {
@@ -59,39 +56,42 @@ const Form4 = () => {
   const isRegister = pageType === "register";
   axios.defaults.withCredentials = true;
   const [loginStatus, setLoginStatus] = useState("");
-  const [ isAlertVisible, setIsAlertVisible ] = React.useState(false);
-  
-    const handleButtonClick = () => {
-        setIsAlertVisible(true);
+  const [isAlertVisible, setIsAlertVisible] = React.useState(false);
 
-        setTimeout(() => {
-            setIsAlertVisible(false);
-        }, 5000);
-    }
-  
+  const handleButtonClick = () => {
+    setIsAlertVisible(true);
+
+    setTimeout(() => {
+      setIsAlertVisible(false);
+    }, 5000);
+  };
+
   const register = async (values, onSubmitProps) => {
     const formData = new FormData();
     for (let value in values) {
       formData.append(value, values[value]);
     }
     // Log the contents of the FormData object
-    console.log('FormData field names:');
+    console.log("FormData field names:");
     for (let key of formData.keys()) {
-    console.log(key);
-}
+      console.log(key);
+    }
     try {
-      const response = await axios.post('http://localhost:8800/register', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8800/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       const savedUser = response.data;
       onSubmitProps.resetForm();
       if (savedUser) {
-        setPageType('login');
+        setPageType("login");
         setLoginStatus(response.data.message);
-      }
-      else{
+      } else {
         setLoginStatus(response.data.message);
       }
       // if (response.data.message) {
@@ -102,84 +102,80 @@ const Form4 = () => {
       //     setPageType('login');
       //   }
       // }
-      
     } catch (error) {
       console.error(error);
     }
   };
-// const register = async (values, onSubmitProps) => {
-//   const formData = new FormData();
-//   for (let value in values) {
-//     formData.append(value, values[value]);
-//   }
-//   formData.append("picture", values.picture);
+  // const register = async (values, onSubmitProps) => {
+  //   const formData = new FormData();
+  //   for (let value in values) {
+  //     formData.append(value, values[value]);
+  //   }
+  //   formData.append("picture", values.picture);
 
-//   try {
-//     const response = await axios.post("http://localhost:8800/register", formData);
-//     const savedUser = response.data;
-//     onSubmitProps.resetForm();
+  //   try {
+  //     const response = await axios.post("http://localhost:8800/register", formData);
+  //     const savedUser = response.data;
+  //     onSubmitProps.resetForm();
 
-//     if (savedUser) {
-//       setPageType("login");
-//     }
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-// Inside your component
+  //     if (savedUser) {
+  //       setPageType("login");
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+  // Inside your component
 
+  // Inside the login function
 
-// Inside the login function
-
-const login = async (values, onSubmitProps) => {
-  const response = await axios.post("http://localhost:8800/login", values);
-  onSubmitProps.resetForm();
-  if (response.data.message) {
-    setLoginStatus(response.data.message);
-    
-  } else {
-    setLoginStatus(response.data[0].firstName);
-    console.log(response.data);
-    navigate("/dashboard");
-  }
-};
-
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://localhost:8800/login");
-      if (response.data.loggedIn === true) {
-        setLoginStatus(response.data.user[0].firstName);
-        console.log(response.data.user[0].firstName);
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.log(error);
+  const login = async (values, onSubmitProps) => {
+    const response = await axios.post("http://localhost:8800/login", values);
+    onSubmitProps.resetForm();
+    if (response.data.message) {
+      setLoginStatus(response.data.message);
+    } else {
+      setLoginStatus(response.data[0].firstName);
+      console.log(response.data);
+      navigate("/dashboard");
     }
   };
-  fetchData();
-}, []);
-  
-// const login = async (values, onSubmitProps) => {
-//   const loggedInResponse = await fetch("http://localhost:8800/login", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(values),
-//   });
-//   const loggedIn = await loggedInResponse.json();
-//   console.log(loggedIn);
-//   onSubmitProps.resetForm();
-//   if (loggedIn) {
-//     dispatch(setLogin(loggedIn.user));
-//     navigate("/dashboard");
-//   }
-// };
-const handleFormSubmit = async (values, onSubmitProps) => {
-  console.log('Form submitted:', values);
-  if (isLogin) await login(values, onSubmitProps);
-  if (isRegister) await register(values, onSubmitProps);
-};
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:8800/login");
+        if (response.data.loggedIn === true) {
+          setLoginStatus(response.data.user[0].firstName);
+          console.log(response.data.user[0].firstName);
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // const login = async (values, onSubmitProps) => {
+  //   const loggedInResponse = await fetch("http://localhost:8800/login", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify(values),
+  //   });
+  //   const loggedIn = await loggedInResponse.json();
+  //   console.log(loggedIn);
+  //   onSubmitProps.resetForm();
+  //   if (loggedIn) {
+  //     dispatch(setLogin(loggedIn.user));
+  //     navigate("/dashboard");
+  //   }
+  // };
+  const handleFormSubmit = async (values, onSubmitProps) => {
+    console.log("Form submitted:", values);
+    if (isLogin) await login(values, onSubmitProps);
+    if (isRegister) await register(values, onSubmitProps);
+  };
 
   return (
     <Formik
@@ -276,7 +272,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               helperText={touched.email && errors.email}
               sx={{ gridColumn: "span 4" }}
             />
-            
+
             <TextField
               label="Password"
               type="password"
@@ -288,7 +284,9 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               helperText={touched.password && errors.password}
               sx={{ gridColumn: "span 4" }}
             />
-            <Typography fontSize={"11px"} color={"red"}>{isAlertVisible&&loginStatus}</Typography>
+            <Typography fontSize={"11px"} color={"red"}>
+              {isAlertVisible && loginStatus}
+            </Typography>
           </Box>
 
           {/* BUTTONS */}
@@ -301,12 +299,13 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                 p: "1rem",
                 backgroundColor: colors.primary[500],
                 color: "#fcfcfc",
-                "&:hover": { backgroundColor: colors.greenAccent[400],color:"black" },
+                "&:hover": {
+                  backgroundColor: colors.greenAccent[400],
+                  color: "black",
+                },
               }}
               onClick={handleButtonClick}
-              
             >
-              
               {isLogin ? "LOGIN" : "REGISTER"}
             </Button>
             <Box display={"flex"} justifyContent="space-between">
@@ -328,14 +327,13 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                   ? "Don't have an account? Sign Up here."
                   : "Already have an account? Login here."}
               </Typography>
-              <Typography
+              {/* <Typography
                 // onClick={() => {
                 //   navigate("/OTP");
                 // }}
                 sx={{
                   textDecoration: "underline",
                   color: colors.grey[500],
-                  onClick:{setIsOpen},
                   "&:hover": {
                     cursor: "pointer",
                     color: colors.grey[100],
@@ -344,9 +342,8 @@ const handleFormSubmit = async (values, onSubmitProps) => {
               >
                 
                 {isLogin && <Popup/>}
-              </Typography>
-              
-          </Box>
+              </Typography> */}
+            </Box>
           </Box>
         </form>
       )}

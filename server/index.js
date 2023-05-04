@@ -12,14 +12,25 @@ import dotenv from "dotenv";
 import Mailgen from "mailgen";
 import nodemailer from "nodemailer"
 import { fileURLToPath } from "url";
+import otpGenerator from 'otp-generator';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+let otpValue = null;
+let otpResetSession = false;
 dotenv.config();
 
 function generateSecret() {
   return crypto.randomBytes(32).toString('hex');
 }
+
+// function localVariables(req, res, next){
+//   req.app.locals = {
+//     OTP : null,
+//     otpResetSession : false
+//   }
+//   next()
+// }
 
 // Use an environment variable to store the secret, or generate a new one if it doesn't exist
 const secret = process.env.SESSION_SECRET || generateSecret();
@@ -30,13 +41,13 @@ app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 app.use(cors({
   origin: ["http://localhost:5002"],
-  methods: ["GET", "POST"],
+  methods: ['GET', 'PUT', 'POST', 'DELETE'],
   credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+// app.use(localVariables);
 
 app.use(
   session({
@@ -55,6 +66,18 @@ const db = mysql.createConnection({
   user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
   database: process.env.SQL_DB,
+});
+
+db.on('error', (error) => {
+  console.error(error);
+});
+
+db.connect((error) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+  console.log('Connected to database');
 });
 
 // Configure multer storage
@@ -297,17 +320,22 @@ app.get('/image/:imageName', (req, res) => {
   res.sendFile(imagePath);
 });
 
-
-
 app.post("/mail", async(req, res) => {
   const { email } = req.body;
   try {
     // Check if email exists in database
-    const [rows, fields] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Email not found' });
-    }
-    let config = {
+    db.query('SELECT * FROM user WHERE email = ?', [email], function (error, results) {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Email not found' });
+      }
+      // Generate OTP
+      otpValue = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false});
+
+      let config = {
         service : 'gmail',
         auth : {
             user: process.env.EMAIL,
@@ -315,46 +343,101 @@ app.post("/mail", async(req, res) => {
 
         }
     }
-
-    // Create transporter
-    let transporter = nodemailer.createTransport(config);
-
-    let MailGenerator = new Mailgen({
-        theme: "default",
-        product : {
-            name: "Cosmo Cafe",
-            link : 'https://mailgen.js/'
-        }
-    })
-
-    let response = {
-        body: {
-            name : "Reset Password",
-            intro: ["Your bill has arrived!","OTP : 324225"],
-            outro: "Looking forward to do more business",
-            copyright: 'Copyright © 2023 Cosmo. All rights reserved.'
-        }
-    }
-
-    let mail = MailGenerator.generate(response)
-
-    let message = {
-        from : "Cosmo Cafe",
-        to : email,
-        subject: "Place Order",
-        html: mail
-    }
-
-    transporter.sendMail(message).then(() => {
-        return res.status(201).json({
-            msg: "you should receive an email"
-        })
-    }).catch(error => {
-        return res.status(500).json({ error })
-    })
+      // Create transporter
+      let transporter = nodemailer.createTransport(config);
+      let MailGenerator = new Mailgen({
+          theme: "default",
+          product : {
+              name: "Cosmo Cafe",
+              link : 'https://mailgen.js/'
+          }
+      })
+      let response = {
+          body: {
+              name : email,
+              intro: ["Please use the following OTP to reset your password.",otpValue],
+              outro: "Looking forward to working with you, Cosmo Cafe",
+              copyright: 'Copyright © 2023 Cosmo. All rights reserved.'
+          }
+      }
+      let mail = MailGenerator.generate(response)
+      let message = {
+          from : "Cosmo Cafe",
+          to : email,
+          subject: "Password Reset OTP",
+          html: mail
+      }
+      
+      transporter.sendMail(message).then(() => {
+          return res.status(201).json({
+              msg: "you should receive an email"
+          })
+      }).catch(error => {                           `                               `
+          return res.status(500).json({ error })
+      })
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to send email' });
+  }
+});
+
+
+app.get('/verify-otp', async (req, res) => {
+  const { code } = req.query;
+  console.log(otpValue);
+  console.log(parseInt(code));
+  if(parseInt(otpValue) === parseInt(code)){
+    otpValue = null; // reset the OTP value
+    otpResetSession = true; // start session for reset password
+    return res.status(201).send({ msg: 'Verify Successsfully!'})
+  }
+  return res.send({ err: "Invalid OTP"});
+});
+
+app.get('/create-reset-session', async (req, res) => {
+  if(otpResetSession){
+    return res.send({ flag : otpResetSession})
+  }
+  return res.status(440).send({message : "Session expired!"})
+});
+
+app.put('/reset-password', async (req, res) => {
+  try {
+    if(!otpResetSession) return res.status(440).send({message : "Session expired!"});
+    const { email, password } = req.body;
+
+    try {
+      // Find user by email
+      db.query('SELECT * FROM user WHERE email = ?', [email], async function (error, results, fields) {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+        if (results.length === 0) {
+          return res.status(404).json({ message: 'Email not found' });
+        }
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Update user password
+        db.query('UPDATE user SET password = ? WHERE email = ?', [hashedPassword, email]);
+
+        // Reset session
+        otpResetSession = false;
+
+        // Send response
+        res.send({ msg : "Record Updated...!"});
+      });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(401).send({ error });
   }
 });
 
