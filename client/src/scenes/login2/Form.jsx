@@ -295,7 +295,7 @@ const Form4 = () => {
               fullWidth
               type="submit"
               sx={{
-                m: "2rem 0",
+                m: "1rem 0",
                 p: "1rem",
                 backgroundColor: colors.primary[500],
                 color: "#fcfcfc",

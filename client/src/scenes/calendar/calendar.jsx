@@ -65,7 +65,7 @@ const Calendar = () => {
               <ListItem
                 key={event.id}
                 sx={{
-                  backgroundColor: colors.greenAccent[500],
+                  backgroundColor: colors.greenAccent[800],
                   margin: "10px 0",
                   borderRadius: "2px",
                 }}

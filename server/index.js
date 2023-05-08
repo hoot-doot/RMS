@@ -6,13 +6,14 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import multer from 'multer';
+import multer from "multer";
 import path from "path";
 import dotenv from "dotenv";
 import Mailgen from "mailgen";
-import nodemailer from "nodemailer"
+import nodemailer from "nodemailer";
 import { fileURLToPath } from "url";
-import otpGenerator from 'otp-generator';
+import otpGenerator from "otp-generator";
+import axios from "axios";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +22,7 @@ let otpResetSession = false;
 dotenv.config();
 
 function generateSecret() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 // function localVariables(req, res, next){
@@ -39,11 +40,13 @@ const saltRounds = 10;
 const app = express();
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
-app.use(cors({
-  origin: ["http://localhost:5002"],
-  methods: ['GET', 'PUT', 'POST', 'DELETE'],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5002"],
+    methods: ["GET", "PUT", "POST", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -52,7 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
     key: "userId",
-    secret : secret,
+    secret: secret,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -68,7 +71,7 @@ const db = mysql.createConnection({
   database: process.env.SQL_DB,
 });
 
-db.on('error', (error) => {
+db.on("error", (error) => {
   console.error(error);
 });
 
@@ -77,7 +80,7 @@ db.connect((error) => {
     console.error(error);
     return;
   }
-  console.log('Connected to database');
+  console.log("Connected to database");
 });
 
 // Configure multer storage
@@ -92,7 +95,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Update the /register route to handle file uploads
-app.post('/register', upload.single('picture'), (req, res) => {
+app.post("/register", upload.single("picture"), (req, res) => {
   const firstName = req.body.firstName;
   const lastName = req.body.lastName;
   const email = req.body.email;
@@ -101,17 +104,16 @@ app.post('/register', upload.single('picture'), (req, res) => {
   const picture = path.basename(picturePath);
   bcrypt.hash(password, saltRounds, (err, hash) => {
     if (err) {
-      console.log('Error hashing password:', err);
-      return res.status(500).send({ error: 'Internal Server Error' });
+      console.log("Error hashing password:", err);
+      return res.status(500).send({ error: "Internal Server Error" });
     }
     const query = `SELECT * FROM user WHERE email='${email}'`;
     db.query(query, (err, results) => {
-      if (err){
-        return res.status(500).json({message: 'Server error'});
-      };
+      if (err) {
+        return res.status(500).json({ message: "Server error" });
+      }
       console.log(results);
 
-  
       if (results.length > 0) {
         // If the username is taken, return an error message
         console.log(results);
@@ -119,34 +121,21 @@ app.post('/register', upload.single('picture'), (req, res) => {
       } else {
         // If the username is available, insert the new user into the database
         db.query(
-        "INSERT INTO user (firstName, lastName, email, password, picture) VALUES (?, ?, ?, ?, ?)",
-        [firstName, lastName, email, hash, picture],
-        (err, result) => {
+          "INSERT INTO user (firstName, lastName, email, password, picture, privilege) VALUES (?, ?, ?, ?, ?, ?)",
+          [firstName, lastName, email, hash, picture, "admin"],
+          (err, result) => {
             if (err) {
-              console.log('Error inserting user into database:', err);
-              return res.status(500).send({ error: 'Internal Server Error' });
+              console.log("Error inserting user into database:", err);
+              return res.status(500).send({ error: "Internal Server Error" });
             }
-          // Return a success message
-          res.status(201).json({ message: 'User created successfully' });
-        });
+            // Return a success message
+            res.status(201).json({ message: "User created successfully" });
+          }
+        );
       }
     });
-
-
-    // db.query(
-    //   "INSERT INTO user (firstName, lastName, email, password, picture) VALUES (?, ?, ?, ?, ?)",
-    //   [firstName, lastName, email, hash, picture],
-    //   (err, result) => {
-    //     if (err) {
-    //       console.log('Error inserting user into database:', err);
-    //       return res.status(500).send({ error: 'Internal Server Error' });
-    //     }
-    //     res.status(200).send({ message: 'User registered successfully' });
-    //   }
-    // );
   });
 });
-
 
 app.get("/login", (req, res) => {
   if (req.session.email) {
@@ -156,61 +145,64 @@ app.get("/login", (req, res) => {
   }
 });
 
-// app.get("/logout", (req, res) => {
-//     res.send({ loggedIn: false });
-// });
-app.get('/logout', function (req, res, next) {
+app.get("/logout", function (req, res, next) {
   // clear the user from the session object and save.
   // this will ensure that re-using the old session id
   // does not have a logged in user
-  req.session.user = null
+  req.session.user = null;
   req.session.save(function (err) {
-    if (err) next(err)
+    if (err) next(err);
 
     req.session.regenerate(function (err) {
-      if (err) next(err)
-      res.redirect('/')
-    })
-  })
-})
-
+      if (err) next(err);
+      res.redirect("/");
+    });
+  });
+});
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  db.query(
-    "SELECT * FROM user WHERE email = ?;",
-    email,
-    (err, result) => {
-      if (err) {
-        res.send({ err: err });
-      }
+  db.query("SELECT * FROM user WHERE email = ?;", email, (err, result) => {
+    if (err) {
+      res.send({ err: err });
+    }
 
-      if (result.length > 0) {
-        bcrypt.compare(password, result[0].password, (error, response) => {
-          if (response) {
-            // console.log(result);
+    if (result.length > 0) {
+      bcrypt.compare(password, result[0].password, (error, response) => {
+        if (response) {
+          if (result[0].privilege === "admin") {
             req.session.email = result;
             console.log(req.session.email);
-            const users = result.map(({ firstName, lastName, email, picture }) => ({ firstName, lastName, email, picture }));
+            const users = result.map(
+              ({ firstName, lastName, email, picture }) => ({
+                firstName,
+                lastName,
+                email,
+                picture,
+              })
+            );
             res.send(users);
           } else {
-            res.send({ message: "Wrong email/password combination!" });
+            res.send({ message: "You don't have admin privilege!" });
           }
-        });
-      } else {
-        res.send({ message: "User doesn't exist" });
-      }
+        } else {
+          res.send({ message: "Wrong email/password combination!" });
+        }
+      });
+    } else {
+      res.send({ message: "User doesn't exist" });
     }
-  );
+  });
 });
 
 app.get("/", (req, res) => {
   res.json("hello");
 });
 app.post("/contacts", (req, res) => {
-  const q = "INSERT INTO contacts( `name`,`email`,`desc`,`phone`,`address`,`city`,`zipCode`,`registrarId`) VALUES (?)";
+  const q =
+    "INSERT INTO contacts( `name`,`email`,`desc`,`phone`,`address`,`city`,`zipCode`) VALUES (?)";
   const values = [
     req.body.name,
     req.body.email,
@@ -219,7 +211,6 @@ app.post("/contacts", (req, res) => {
     req.body.address,
     req.body.city,
     req.body.zipCode,
-    req.body.registrarId  
   ];
 
   db.query(q, [values], (err, data) => {
@@ -227,7 +218,6 @@ app.post("/contacts", (req, res) => {
     return res.json(data);
   });
 });
-
 
 app.get("/contacts", (req, res) => {
   const q = "SELECT * FROM contacts";
@@ -241,13 +231,14 @@ app.get("/contacts", (req, res) => {
 });
 
 app.post("/invoices", (req, res) => {
-  const q = "INSERT INTO invoices( `name`,`email`,`cost`,`phone`,`date`) VALUES (?)";
+  const q =
+    "INSERT INTO invoices( `name`,`email`,`cost`,`phone`,`date`) VALUES (?)";
   const values = [
     req.body.name,
     req.body.email,
     req.body.cost,
     req.body.phone,
-    req.body.date, 
+    req.body.date,
   ];
 
   db.query(q, [values], (err, data) => {
@@ -267,13 +258,15 @@ app.get("/invoices", (req, res) => {
   });
 });
 
-app.post("/menu", (req, res) => {
-  const q = "INSERT INTO menu( `name`,`sold`,`cost`,`type`) VALUES (?)";
+app.post("/menu", async (req, res) => {
+  const imageUrl = await getRandomImageUrl(req.body.name);
+  const q = "INSERT INTO menu( `name`,`sold`,`cost`,`type`,`url`) VALUES (?)";
   const values = [
     req.body.name,
     req.body.sold,
     req.body.cost,
     req.body.type,
+    imageUrl,
   ];
 
   db.query(q, [values], (err, data) => {
@@ -281,7 +274,6 @@ app.post("/menu", (req, res) => {
     return res.json(data);
   });
 });
-
 
 app.get("/menu", (req, res) => {
   const q = "SELECT * FROM menu";
@@ -314,134 +306,170 @@ app.get("/transactions", (req, res) => {
   });
 });
 
-app.get('/image/:imageName', (req, res) => {
+app.get("/image/:imageName", (req, res) => {
   const imageName = req.params.imageName;
-  const imagePath = path.join(__dirname, 'public', 'assets', imageName);  
+  const imagePath = path.join(__dirname, "public", "assets", imageName);
   res.sendFile(imagePath);
 });
 
-app.post("/mail", async(req, res) => {
+app.post("/mail", async (req, res) => {
   const { email } = req.body;
   try {
     // Check if email exists in database
-    db.query('SELECT * FROM user WHERE email = ?', [email], function (error, results) {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-      if (results.length === 0) {
-        return res.status(404).json({ message: 'Email not found' });
-      }
-      // Generate OTP
-      otpValue = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false});
-
-      let config = {
-        service : 'gmail',
-        auth : {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASS
-
+    db.query(
+      "SELECT * FROM user WHERE email = ?",
+      [email],
+      function (error, results) {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: "Internal server error" });
         }
-    }
-      // Create transporter
-      let transporter = nodemailer.createTransport(config);
-      let MailGenerator = new Mailgen({
+        if (results.length === 0) {
+          return res.status(404).json({ message: "Email not found" });
+        }
+        // Generate OTP
+        otpValue = otpGenerator.generate(6, {
+          lowerCaseAlphabets: false,
+          upperCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        let config = {
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASS,
+          },
+        };
+        // Create transporter
+        let transporter = nodemailer.createTransport(config);
+        let MailGenerator = new Mailgen({
           theme: "default",
-          product : {
-              name: "Cosmo Cafe",
-              link : 'https://mailgen.js/'
-          }
-      })
-      let response = {
+          product: {
+            name: "Cosmo Cafe",
+            link: "https://mailgen.js/",
+          },
+        });
+        let response = {
           body: {
-              name : email,
-              intro: ["Please use the following OTP to reset your password.",otpValue],
-              outro: "Looking forward to working with you, Cosmo Cafe",
-              copyright: 'Copyright © 2023 Cosmo. All rights reserved.'
-          }
-      }
-      let mail = MailGenerator.generate(response)
-      let message = {
-          from : "Cosmo Cafe",
-          to : email,
+            name: email,
+            intro: [
+              "Please use the following OTP to reset your password.",
+              otpValue,
+            ],
+            outro: "Looking forward to working with you, Cosmo Cafe",
+            copyright: "Copyright © 2023 Cosmo. All rights reserved.",
+          },
+        };
+        let mail = MailGenerator.generate(response);
+        let message = {
+          from: "Cosmo Cafe",
+          to: email,
           subject: "Password Reset OTP",
-          html: mail
-      }
-      
-      transporter.sendMail(message).then(() => {
-          return res.status(201).json({
-              msg: "you should receive an email"
+          html: mail,
+        };
+
+        transporter
+          .sendMail(message)
+          .then(() => {
+            return res.status(201).json({
+              msg: "you should receive an email",
+            });
           })
-      }).catch(error => {                           `                               `
-          return res.status(500).json({ error })
-      })
-    });
+          .catch((error) => {
+            `                               `;
+            return res.status(500).json({ error });
+          });
+      }
+    );
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to send email' });
+    res.status(500).json({ message: "Failed to send email" });
   }
 });
 
-
-app.get('/verify-otp', async (req, res) => {
+app.get("/verify-otp", async (req, res) => {
   const { code } = req.query;
   console.log(otpValue);
   console.log(parseInt(code));
-  if(parseInt(otpValue) === parseInt(code)){
+  if (parseInt(otpValue) === parseInt(code)) {
     otpValue = null; // reset the OTP value
     otpResetSession = true; // start session for reset password
-    return res.status(201).send({ msg: 'Verify Successsfully!'})
+    return res.status(201).send({ msg: "Verify Successsfully!" });
   }
-  return res.send({ err: "Invalid OTP"});
+  return res.send({ err: "Invalid OTP" });
 });
 
-app.get('/create-reset-session', async (req, res) => {
-  if(otpResetSession){
-    return res.send({ flag : otpResetSession})
+app.get("/create-reset-session", async (req, res) => {
+  if (otpResetSession) {
+    return res.send({ flag: otpResetSession });
   }
-  return res.status(440).send({message : "Session expired!"})
+  return res.status(440).send({ message: "Session expired!" });
 });
 
-app.put('/reset-password', async (req, res) => {
+app.put("/reset-password", async (req, res) => {
   try {
-    if(!otpResetSession) return res.status(440).send({message : "Session expired!"});
+    if (!otpResetSession)
+      return res.status(440).send({ message: "Session expired!" });
     const { email, password } = req.body;
 
     try {
       // Find user by email
-      db.query('SELECT * FROM user WHERE email = ?', [email], async function (error, results, fields) {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ message: 'Internal server error' });
+      db.query(
+        "SELECT * FROM user WHERE email = ?",
+        [email],
+        async function (error, results, fields) {
+          if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal server error" });
+          }
+          if (results.length === 0) {
+            return res.status(404).json({ message: "Email not found" });
+          }
+          // Hash password
+          const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+          // Update user password
+          db.query("UPDATE user SET password = ? WHERE email = ?", [
+            hashedPassword,
+            email,
+          ]);
+
+          // Reset session
+          otpResetSession = false;
+
+          // Send response
+          res.send({ msg: "Record Updated...!" });
         }
-        if (results.length === 0) {
-          return res.status(404).json({ message: 'Email not found' });
-        }
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Update user password
-        db.query('UPDATE user SET password = ? WHERE email = ?', [hashedPassword, email]);
-
-        // Reset session
-        otpResetSession = false;
-
-        // Send response
-        res.send({ msg : "Record Updated...!"});
-      });
-
+      );
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error });
     }
-
   } catch (error) {
     console.error(error);
     return res.status(401).send({ error });
   }
 });
 
+async function getRandomImageUrl(searchTerm) {
+  const apiKey = "GonhbRYylIx2aS8Kz8GnXNQwGOhhDHgp2tb8VC4CatVgZveb0HK1PGqi";
+  try {
+    const response = await axios.get(
+      `https://api.pexels.com/v1/search?query=${searchTerm}&per_page=1`,
+      {
+        headers: {
+          Authorization: apiKey,
+        },
+      }
+    );
+    return response.data.photos[0].src.original;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error fetching random image");
+  }
+}
+
 app.listen(8800, () => {
   console.log("Connected to backend.");
 });
-
