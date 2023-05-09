@@ -285,6 +285,41 @@ app.get("/menu", (req, res) => {
     return res.json(data);
   });
 });
+
+app.get('/menu/top5', (req, res) => {
+  const query = 'SELECT id, name, sold FROM menu ORDER BY sold DESC LIMIT 5';
+  db.query(query, (error, results, fields) => {
+    if (error) throw error;
+
+    // format the results
+    const formattedResults = results.map((item, index) => {
+      return {
+        id: item.sold,
+        label: item.name,
+        value: item.sold,
+        color: "hsl(152, 100%, 50%)"
+      };
+    });
+
+    res.json(formattedResults);
+  });
+});
+
+app.post("/team", async (req, res) => {
+  const q = "INSERT INTO team( `name`,`email`,`age`,`phone` ) VALUES (?)";
+  const values = [
+    req.body.name,
+    req.body.email,
+    req.body.age,
+    req.body.phone,
+  ];
+
+  db.query(q, [values], (err, data) => {
+    if (err) return res.send(err);
+    return res.json(data);
+  });
+});
+
 app.get("/team", (req, res) => {
   const q = "SELECT * FROM team";
   db.query(q, (err, data) => {

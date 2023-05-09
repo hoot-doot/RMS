@@ -19,14 +19,13 @@ import { useContext } from "react";
 import Contact from "./Contact";
 import Menu from "./Menu";
 import Header from "../../components/Header";
+import Team from "./Team";
 
 const Forum = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
   const [activeStep, setActiveStep] = useState(0);
-  const isFirstStep = activeStep === 0;
-  const isSecondStep = activeStep === 1;
 
   // Define the options for the dropdown and create a state to store the selected option
   const options = [
@@ -95,6 +94,27 @@ const Forum = () => {
         const data = await response.json();
         console.log(data);
     }
+    if (selectedOption === "TEAM") {
+        console.log("team");
+        const requestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: values.fullName,
+            email: values.contactEmail,
+            phone: values.contact,
+            age: values.age,
+            access: values.access,
+          }),
+        };
+  
+        const response = await fetch(
+          "http://localhost:8800/team",
+          requestOptions
+        );
+        const data = await response.json();
+        console.log(data);
+    }
   };
 
   return (
@@ -137,7 +157,7 @@ const Forum = () => {
         <Formik
           onSubmit={handleFormSubmit}
           initialValues={initialValues}
-          validationSchema={checkoutSchema[activeStep]}
+          validationSchema={validationSchema(selectedOption)}
         >
           {({
             values,
@@ -182,6 +202,22 @@ const Forum = () => {
                   />
                 </Box>
               )}
+              {selectedOption === "TEAM" && (
+                <Box m="20px">
+                  <Header
+                    title="ADD TO TEAM"
+                    subtitle="Create a New Team Member"
+                  />
+                  <Team
+                    values={values}
+                    errors={errors}
+                    touched={touched}
+                    handleBlur={handleBlur}
+                    handleChange={handleChange}
+                    setFieldValue={setFieldValue}
+                  />
+                </Box>
+              )}
               <Box m="20px">
                 {selectedOption && (
                   <Box display="flex" justifyContent="end" mt="20px">
@@ -214,7 +250,49 @@ const Forum = () => {
 };
 
 const phoneRegExp = /^(\+977)?[9][6-9]\d{8}$/;
+const roleRegex = /(staff|manager|admin)/i;
+const categoryRegex = /(Main|Starter|Drink)/;
 
+const validationSchema = (selectedOption) => {
+    switch (selectedOption) {
+      case "MENU":
+        return yup.object().shape({
+          itemName: yup.string().required("required"),
+          itemCost: yup.number().required("required"),
+          itemType: yup.string().matches(categoryRegex, "Main, Starter or Drink", { excludeEmptyString: true }).required("required"),
+          itemSold: yup.number(),
+        });
+      case "CONTACT":
+        return yup.object().shape({
+          fullName: yup.string().required("required"),
+          desc: yup.string().required("required"),
+          contactEmail: yup.string().email("invalid contactEmail").required("required"),
+          contact: yup
+            .string()
+            .matches(phoneRegExp, "Phone number is not valid")
+            .required("required"),
+          address1: yup.string().required("required"),
+          city: yup.string().required("required"),
+          zipCode: yup.number().required("required"),
+        });
+      case "TEAM":
+        return yup.object().shape({
+          fullName: yup.string().required("required"),
+          contactEmail: yup.string().email("invalid contactEmail").required("required"),
+          contact: yup
+            .string()
+            .matches(phoneRegExp, "Phone number is not valid")
+            .required("required"),
+          age: yup.number().required("required"),
+          access: yup.string().matches(roleRegex, "Manager, User or Admin", { excludeEmptyString: true }).required("required")
+        });
+      case "INVOICE":
+        return yup.object().shape({});
+      default:
+        return yup.object().shape({});
+    }
+  };
+  
 const checkoutSchema = yup.object().shape({
   // menu
   itemName: yup.string().required("required"),
@@ -222,6 +300,7 @@ const checkoutSchema = yup.object().shape({
   itemType: yup.string().required("required"),
   itemSold: yup.number(),
 
+  //contact
   fullName: yup.string().required("required"),
   desc: yup.string().required("required"),
   contactEmail: yup.string().email("invalid contactEmail").required("required"),
@@ -232,6 +311,17 @@ const checkoutSchema = yup.object().shape({
   address1: yup.string().required("required"),
   city: yup.string().required("required"),
   zipCode: yup.number().required("required"),
+
+  //team
+  fullName: yup.string().required("required"),
+  contactEmail: yup.string().email("invalid contactEmail").required("required"),
+  contact: yup
+    .string()
+    .matches(phoneRegExp, "Phone number is not valid")
+    .required("required"),
+  age: yup.number().required("required"),
+  
+
 });
 const initialValues = {
   itemName: "",
@@ -245,6 +335,7 @@ const initialValues = {
   address1: "",
   city: "",
   zipCode: "",
+  age: "",
 };
 
 export default Forum;

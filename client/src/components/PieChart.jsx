@@ -2,15 +2,31 @@ import { ResponsivePie } from "@nivo/pie";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
 import { mockPieData as data } from "../data/mockData";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const PieChart = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const pieTheme = theme.palette.mode === "dark" ? "yellow_green_blue" : "purple_orange";
+  const [menuData, setMenuData] = useState([]);
+  useEffect(() => {
+    const fetchAllMenu = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/menu/top5");
+        setMenuData(res.data);
+        console.log(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchAllMenu();
+  }, []);
+
   return (
     <ResponsivePie
       
-      data={data}
+      data={menuData}
       colors={{ scheme: pieTheme }}
       theme={{
         axis: {

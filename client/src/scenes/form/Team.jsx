@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 
-const Contact = ({ values, touched, errors, handleBlur, handleChange }) => {
+const Team = ({ values, touched, errors, handleBlur, handleChange }) => {
   return (
     <Box
       display="grid"
@@ -12,7 +12,7 @@ const Contact = ({ values, touched, errors, handleBlur, handleChange }) => {
         fullWidth
         variant="filled"
         type="text"
-        label="First Name"
+        label="Full Name"
         onBlur={handleBlur}
         onChange={handleChange}
         value={values.fullName}
@@ -24,14 +24,14 @@ const Contact = ({ values, touched, errors, handleBlur, handleChange }) => {
       <TextField
         fullWidth
         variant="filled"
-        type="text"
-        label="Description"
+        type="number"
+        label="Age"
         onBlur={handleBlur}
         onChange={handleChange}
-        value={values.desc}
-        name="desc"
-        error={!!touched.desc && !!errors.desc}
-        helperText={touched.desc && errors.desc}
+        value={values.age}
+        name="age"
+        error={!!touched.age && !!errors.age}
+        helperText={touched.age && errors.age}
         sx={{ gridColumn: "span 4" }}
       />
       <TextField
@@ -64,43 +64,17 @@ const Contact = ({ values, touched, errors, handleBlur, handleChange }) => {
         fullWidth
         variant="filled"
         type="text"
-        label="Address"
+        label="Access"
         onBlur={handleBlur}
         onChange={handleChange}
-        value={values.address1}
-        name="address1"
-        error={!!touched.address1 && !!errors.address1}
-        helperText={touched.address1 && errors.address1}
-        sx={{ gridColumn: "span 4" }}
-      />
-      <TextField
-        fullWidth
-        variant="filled"
-        type="text"
-        label="City"
-        onBlur={handleBlur}
-        onChange={handleChange}
-        value={values.city}
-        name="city"
-        error={!!touched.city && !!errors.city}
-        helperText={touched.city && errors.city}
-        sx={{ gridColumn: "span 4" }}
-      />
-      <TextField
-        fullWidth
-        variant="filled"
-        type="text"
-        label="Zip Code"
-        onBlur={handleBlur}
-        onChange={handleChange}
-        value={values.zipCode}
-        name="zipCode"
-        error={!!touched.zipCode && !!errors.zipCode}
-        helperText={touched.zipCode && errors.zipCode}
+        value={values.access}
+        name="access"
+        error={!!touched.access && !!errors.access}
+        helperText={touched.access && errors.access}
         sx={{ gridColumn: "span 4" }}
       />
     </Box>
   );
 };
 
-export default Contact;
+export default Team;

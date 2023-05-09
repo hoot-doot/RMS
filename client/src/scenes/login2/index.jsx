@@ -33,7 +33,7 @@ const LoginPage = () => {
           style={{ cursor: "pointer", borderRadius: "50%" }}
         />
         <Typography fontWeight="bold" fontSize="32px" color="white">
-          Resturant Management System
+          Cosmo Cafe Admin
         </Typography>
       </Box>
 
