@@ -1,6 +1,6 @@
 # RMS
 Resturant Management System
-
+https://github.com/hoot-doot/RMS-staff
 ![RMS](https://github.com/hoot-doot/RMS/blob/main/ss%20admin/1.png)
 ![RMS](https://github.com/hoot-doot/RMS/blob/main/ss%20admin/2.png)
 ![RMS](https://github.com/hoot-doot/RMS/blob/main/ss%20admin/3.png)
